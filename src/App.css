@@ -1,0 +1,5 @@
+/* Remove max-width and padding to allow for full-width layouts */
+#root {
+    margin: 0 auto;
+    text-align: center;
+}
