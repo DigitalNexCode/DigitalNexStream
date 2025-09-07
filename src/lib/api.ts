@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { Tables, TablesInsert } from '@/types/supabase';
+import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 export type TrackWithArtistAndLikes = Tables<'tracks'> & {
@@ -99,9 +99,27 @@ export const getArtistTracks = async (artistId: string, userId?: string): Promis
     return data as unknown as TrackWithArtistAndLikes[];
 };
 
+export const getArtistProfile = async (artistId: string): Promise<Tables<'profiles'> | null> => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', artistId)
+        .single();
+
+    if (error) {
+        console.error('Error fetching artist profile:', error);
+        // Don't throw for not found, just return null
+        if (error.code === 'PGRST116') {
+            return null;
+        }
+        throw error;
+    }
+    return data;
+};
+
 
 // UPLOAD
-const uploadFile = async (bucket: 'audio_files' | 'cover_art', file: File, onProgress: (progress: number) => void): Promise<string> => {
+const uploadFile = async (bucket: 'audio_files' | 'cover_art' | 'avatars', file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExt}`;
     const filePath = `${fileName}`;
@@ -129,19 +147,13 @@ export const uploadTrack = async (
     coverArtFile: File,
     onProgress: (progress: { audio: number, cover: number }) => void
 ) => {
-    let audioProgress = 0;
-    let coverProgress = 0;
-
-    const audio_url = await uploadFile('audio_files', audioFile, (p) => {
-        audioProgress = p;
-        onProgress({ audio: audioProgress, cover: coverProgress });
-    });
-    onProgress({ audio: 100, cover: coverProgress });
-
-    const cover_art_url = await uploadFile('cover_art', coverArtFile, (p) => {
-        coverProgress = p;
-        onProgress({ audio: audioProgress, cover: coverProgress });
-    });
+    
+    // Note: Supabase JS v2 doesn't support upload progress tracking out of the box.
+    // This is a placeholder for the UI.
+    onProgress({ audio: 50, cover: 0 });
+    const audio_url = await uploadFile('audio_files', audioFile);
+    onProgress({ audio: 100, cover: 50 });
+    const cover_art_url = await uploadFile('cover_art', coverArtFile);
     onProgress({ audio: 100, cover: 100 });
 
     const { data: newTrack, error: trackError } = await supabase
@@ -220,5 +232,29 @@ export const toggleLike = async (trackId: string, userId: string): Promise<boole
         const { error: insertError } = await supabase.from('likes').insert({ track_id: trackId, user_id: userId });
         if (insertError) throw insertError;
         return true;
+    }
+};
+
+// PROFILE
+export const updateUserProfile = async (userId: string, displayName: string, avatarFile?: File) => {
+    let avatar_url: string | undefined = undefined;
+
+    if (avatarFile) {
+        avatar_url = await uploadFile('avatars', avatarFile);
+    }
+
+    const updates: TablesUpdate<'profiles'> = {
+        display_name: displayName,
+        ...(avatar_url && { avatar_url }),
+    };
+
+    const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId);
+
+    if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
     }
 };

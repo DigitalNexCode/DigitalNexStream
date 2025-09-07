@@ -9,6 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
+import { FullScreenLoader } from '@/components/layout/FullScreenLoader';
 
 const signUpSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -22,7 +25,8 @@ const signInSchema = z.object({
 });
 
 export const AuthPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const { session, loading: authLoading } = useAuth();
+  const [formLoading, setFormLoading] = useState(false);
 
   const signUpForm = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -35,7 +39,7 @@ export const AuthPage: React.FC = () => {
   });
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
-    setLoading(true);
+    setFormLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
@@ -43,8 +47,7 @@ export const AuthPage: React.FC = () => {
         options: {
           data: {
             display_name: values.displayName,
-            // You can add a default avatar URL here if you want
-            // avatar_url: 'https://...'
+            role: 'listener',
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -52,7 +55,6 @@ export const AuthPage: React.FC = () => {
 
       if (error) throw error;
       
-      // The new trigger handles profile creation. We just need to check for specific cases.
       if (data.user?.identities?.length === 0) {
          toast.error('Sign Up Error', { description: 'This email is already in use by another account.' });
       } else {
@@ -65,12 +67,12 @@ export const AuthPage: React.FC = () => {
     } catch (error: any) {
       toast.error('Sign Up Error', { description: error.message || 'An unexpected error occurred.' });
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
 
   const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
-    setLoading(true);
+    setFormLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -78,13 +80,20 @@ export const AuthPage: React.FC = () => {
       });
       if (error) throw error;
       toast.success('Signed in successfully!');
-      // The AuthProvider will handle navigation
     } catch (error: any) {
       toast.error('Sign In Error', { description: 'Invalid credentials. Please try again.' });
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
+
+  if (authLoading) {
+    return <FullScreenLoader />;
+  }
+
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
@@ -128,8 +137,8 @@ export const AuthPage: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing In...' : 'Sign In'}
+                  <Button type="submit" className="w-full" disabled={formLoading}>
+                    {formLoading ? 'Signing In...' : 'Sign In'}
                   </Button>
                 </form>
               </Form>
@@ -184,8 +193,8 @@ export const AuthPage: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating Account...' : 'Create Account'}
+                  <Button type="submit" className="w-full" disabled={formLoading}>
+                    {formLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </form>
               </Form>

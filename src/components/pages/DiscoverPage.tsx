@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, Clock, Heart } from 'lucide-react';
 import { getTracks, TrackWithArtistAndLikes } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const TrackGridSkeleton = () => (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

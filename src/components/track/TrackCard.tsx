@@ -1,9 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Play, Pause, Heart, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useAudio } from '@/context/AudioContext';
+import { useAudio } from '@/hooks/useAudio';
 import { TrackWithArtistAndLikes } from '@/lib/api';
 
 interface TrackCardProps {
@@ -42,13 +43,15 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, playlist, variant =
         </div>
         <div className="flex-1 min-w-0 ml-3">
           <h3 className="font-medium truncate">{track.title}</h3>
-          <p className="text-sm text-muted-foreground truncate">{track.profiles?.display_name}</p>
+          <Link to={`/artist/${track.profiles?.id}`} onClick={(e) => e.stopPropagation()} className="text-sm text-muted-foreground truncate hover:underline">
+            {track.profiles?.display_name}
+          </Link>
         </div>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">{Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}</span>
           <Button variant="ghost" size="sm"><Heart className="w-4 h-4" /></Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent><DropdownMenuItem>Add to Queue</DropdownMenuItem></DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -66,7 +69,9 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, playlist, variant =
           </Button>
         </div>
         <h3 className="font-medium truncate mb-1">{track.title}</h3>
-        <p className="text-sm text-muted-foreground truncate mb-2">{track.profiles?.display_name}</p>
+        <Link to={`/artist/${track.profiles?.id}`} onClick={(e) => e.stopPropagation()} className="text-sm text-muted-foreground truncate hover:underline mb-2 block">
+          {track.profiles?.display_name}
+        </Link>
         <p className="text-xs text-muted-foreground">{(track.streams[0]?.count || 0).toLocaleString()} plays</p>
       </CardContent>
     </Card>

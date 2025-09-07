@@ -1,9 +1,10 @@
 import React from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Repeat, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { useAudio } from '@/context/AudioContext';
-import { useAuth } from '@/context/AuthContext';
+import { useAudio } from '@/hooks/useAudio';
+import { useAuth } from '@/hooks/useAuth';
 
 export const MusicPlayer: React.FC = () => {
   const {
@@ -44,9 +45,9 @@ export const MusicPlayer: React.FC = () => {
             />
             <div className="min-w-0">
               <h3 className="font-medium truncate">{currentTrack.title}</h3>
-              <p className="text-sm text-muted-foreground truncate">
+              <Link to={`/artist/${currentTrack.profiles?.id}`} className="text-sm text-muted-foreground truncate hover:underline">
                 {currentTrack.profiles?.display_name}
-              </p>
+              </Link>
             </div>
             {user && (
               <Button variant="ghost" size="sm" onClick={toggleCurrentTrackLike}>

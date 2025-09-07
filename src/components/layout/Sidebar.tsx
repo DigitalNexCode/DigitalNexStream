@@ -4,7 +4,7 @@ import { Home, Search, Library, Plus, Heart, TrendingUp, Music, Users, LayoutDas
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabaseClient';
 import { Tables } from '@/types/supabase';
 

@@ -60,7 +60,10 @@ export const LandingPage: React.FC = () => {
       <LandingHeader />
 
       {/* Hero Section */}
-      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center text-center text-white overflow-hidden">
+      <section 
+        className="relative h-[80vh] min-h-[600px] flex items-center justify-center text-center text-white overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop')" }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 opacity-80"></div>
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div className="relative z-10 p-4">

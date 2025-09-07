@@ -14,7 +14,9 @@ export const LandingHeader: React.FC = () => {
           <span className="font-bold text-xl text-white">SoundWave</span>
         </Link>
         <nav className="flex items-center space-x-2">
-          <Button variant="ghost" className="text-white hover:bg-white/10">Features</Button>
+          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+            <Link to="/features">Features</Link>
+          </Button>
           <Button variant="ghost" className="text-white hover:bg-white/10">Artists</Button>
           <div className="text-white [&>button]:text-white [&>button]:hover:bg-white/10 [&>button:focus-visible]:ring-white">
             <ThemeToggle />

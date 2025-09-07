@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useRef, useCallback, useEffect } from 'react';
 import { TrackWithArtistAndLikes, incrementStreamCount, toggleLike } from '@/lib/api';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
-interface AudioContextType {
+export interface AudioContextType {
   currentTrack: TrackWithArtistAndLikes | null;
   isPlaying: boolean;
   currentTime: number;
@@ -19,15 +19,7 @@ interface AudioContextType {
   toggleCurrentTrackLike: () => void;
 }
 
-const AudioContext = createContext<AudioContextType | null>(null);
-
-export const useAudio = () => {
-  const context = useContext(AudioContext);
-  if (!context) {
-    throw new Error('useAudio must be used within an AudioProvider');
-  }
-  return context;
-};
+export const AudioContext = createContext<AudioContextType | null>(null);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentTrack, setCurrentTrackState] = useState<TrackWithArtistAndLikes | null>(null);
