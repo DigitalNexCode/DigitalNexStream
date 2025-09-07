@@ -15,10 +15,10 @@ export const getTracks = async (userId?: string): Promise<TrackWithArtistAndLike
     .from('tracks')
     .select(`
       *,
-      profiles (id, display_name, avatar_url),
-      likes:likes!track_id(count),
-      streams:streams!track_id(count),
-      user_liked:likes!inner(count)
+      profiles:profiles!tracks_owner_id_fkey (id, display_name, avatar_url),
+      likes:likes!likes_track_id_fkey(count),
+      streams:streams!streams_track_id_fkey(count),
+      user_liked:likes!likes_track_id_fkey(count)
     `)
     .order('created_at', { ascending: false });
 
@@ -40,9 +40,9 @@ export const getPublicTracks = async (limit = 6): Promise<TrackWithArtistAndLike
         .from('tracks')
         .select(`
             *,
-            profiles (id, display_name, avatar_url),
-            likes:likes!track_id(count),
-            streams:streams!track_id(count)
+            profiles:profiles!tracks_owner_id_fkey (id, display_name, avatar_url),
+            likes:likes!likes_track_id_fkey(count),
+            streams:streams!streams_track_id_fkey(count)
         `)
         .order('created_at', { ascending: false })
         .limit(limit);
@@ -51,28 +51,51 @@ export const getPublicTracks = async (limit = 6): Promise<TrackWithArtistAndLike
         console.error('Error fetching public tracks:', error);
         throw error;
     }
-    // @ts-ignore
-    return data.map(t => ({ ...t, user_liked: [] }));
+
+    if (!data) return [];
+
+    // Manually add the user_liked property to satisfy the type, since there's no user.
+    const tracksWithLikes = data.map(track => ({
+        ...track,
+        user_liked: [],
+    }));
+
+    return tracksWithLikes as unknown as TrackWithArtistAndLikes[];
 };
 
 
-export const getArtistTracks = async (artistId: string): Promise<TrackWithArtistAndLikes[]> => {
-    const { data, error } = await supabase
-      .from('tracks')
-      .select(`
+export const getArtistTracks = async (artistId: string, userId?: string): Promise<TrackWithArtistAndLikes[]> => {
+    const selectStatement = `
         *,
-        profiles (id, display_name, avatar_url),
-        likes:likes!track_id(count),
-        streams:streams!track_id(count),
-        user_liked:likes!inner(count)
-      `)
+        profiles:profiles!tracks_owner_id_fkey (id, display_name, avatar_url),
+        likes:likes!likes_track_id_fkey(count),
+        streams:streams!streams_track_id_fkey(count)
+        ${userId ? ', user_liked:likes!likes_track_id_fkey(count)' : ''}
+    `;
+
+    let query = supabase
+      .from('tracks')
+      .select(selectStatement)
       .eq('owner_id', artistId)
       .order('created_at', { ascending: false });
+    
+    if (userId) {
+        query = query.eq('user_liked.user_id', userId);
+    }
+  
+    const { data, error } = await query;
   
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching artist tracks:', error);
       throw error;
     }
+
+    if (!data) return [];
+
+    if (!userId) {
+        return data.map(track => ({ ...track, user_liked: [] })) as unknown as TrackWithArtistAndLikes[];
+    }
+    
     return data as unknown as TrackWithArtistAndLikes[];
 };
 

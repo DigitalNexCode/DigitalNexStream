@@ -8,7 +8,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'jsmediatags': 'jsmediatags/dist/jsmediatags.min.js',
     },
   },
   optimizeDeps: {

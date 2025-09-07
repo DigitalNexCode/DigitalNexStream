@@ -43,6 +43,8 @@ export const AuthPage: React.FC = () => {
         options: {
           data: {
             display_name: values.displayName,
+            // You can add a default avatar URL here if you want
+            // avatar_url: 'https://...'
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -50,16 +52,18 @@ export const AuthPage: React.FC = () => {
 
       if (error) throw error;
       
+      // The new trigger handles profile creation. We just need to check for specific cases.
       if (data.user?.identities?.length === 0) {
-         toast.error('Sign Up Error', { description: 'This email is already in use.' });
+         toast.error('Sign Up Error', { description: 'This email is already in use by another account.' });
       } else {
          toast.success('Sign Up Successful!', {
-            description: 'Please check your email to verify your account.',
+            description: 'Please check your email to verify your account and complete the process.',
          });
+         signUpForm.reset();
       }
 
     } catch (error: any) {
-      toast.error('Sign Up Error', { description: error.message });
+      toast.error('Sign Up Error', { description: error.message || 'An unexpected error occurred.' });
     } finally {
       setLoading(false);
     }
@@ -74,6 +78,7 @@ export const AuthPage: React.FC = () => {
       });
       if (error) throw error;
       toast.success('Signed in successfully!');
+      // The AuthProvider will handle navigation
     } catch (error: any) {
       toast.error('Sign In Error', { description: 'Invalid credentials. Please try again.' });
     } finally {
@@ -82,8 +87,8 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Tabs defaultValue="signin" className="w-[400px]">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+      <Tabs defaultValue="signin" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signin">Sign In</TabsTrigger>
           <TabsTrigger value="signup">Sign Up</TabsTrigger>

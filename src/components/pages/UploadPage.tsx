@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,7 +16,7 @@ import { useAuth } from '@/context/AuthContext';
 import { uploadTrack } from '@/lib/api';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import jsmediatags from 'jsmediatags';
+import jsmediatags from "jsmediatags/dist/jsmediatags.min.js";
 
 const contributorSchema = z.object({
   profile_id: z.string().optional(),
